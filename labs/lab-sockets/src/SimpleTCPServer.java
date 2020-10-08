@@ -3,12 +3,18 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Scanner;
 
 public class SimpleTCPServer {
     private ServerSocket serverSocket;
     private Socket socket;
     private DataInputStream input;
     private DataOutputStream output;
+    private Scanner scanner;
+
+    public SimpleTCPServer() {
+        this.scanner = new Scanner(System.in);
+    }
 
     public void start(int port) throws IOException {
         // Cria server socket para aguardar conexoes de clientes em loop
@@ -30,9 +36,11 @@ public class SimpleTCPServer {
             System.out.println("[S4] Mensagem recebida de " + socket.getRemoteSocketAddress() + ": " + msg);
             
             // Envia resposta ao cliente no canal de saida
-            String reply = msg.toUpperCase();
+            String reply = getReplyMessage(scanner, "[REPLY] Insira a resposta do servidor: ");
+
+            //String reply = msg.toUpperCase();
             output.writeUTF(reply);
-            System.out.println("[S5] Mensagem enviada para " + socket.getRemoteSocketAddress() + ": " + reply);
+            System.out.println("[S5] Mensagem enviada para " + socket.getRemoteSocketAddress() + ": " + reply + "\n");
         }
     }
 
@@ -41,14 +49,25 @@ public class SimpleTCPServer {
         output.close();
         socket.close();
         serverSocket.close();
+        scanner.close();
     }
+
+    private String getReplyMessage(Scanner scanner, String title) {
+        System.out.print(title);
+        String message = scanner.nextLine();
+        
+        return message;
+    }
+
+
     public static void main(String[] args) {
         int serverPort = 6666;
+        
         try {
             // Inicia e roda servidor
             SimpleTCPServer server = new SimpleTCPServer();
             server.start(serverPort);
-
+            
             // Finaliza servidor
             server.stop();
         } catch (IOException e) {
